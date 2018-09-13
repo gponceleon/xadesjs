@@ -5,6 +5,8 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var tslib_1 = require('tslib');
 var XmlCore = require('xml-core');
 var XmlDSigJs = require('xmldsigjs');
+const uuidv1 = require('uuid/v1');
+const xmlId = uuidv1();
 
 let XmlXades = {
     DefaultPrefix: "xades",
@@ -2109,11 +2111,10 @@ class SignedXml extends XmlDSigJs.SignedXml {
             throw new XmlCore.XmlError(XmlCore.XE.XML_EXCEPTION, "Cannot create QualifyingProperties cause current signature has got one. You must create CounterSignature");
         }
         const rnd = XmlDSigJs.Application.crypto.getRandomValues(new Uint8Array(6));
-        const id = XmlCore.Convert.ToHex(rnd);
-        this.XmlSignature.Id = `xmldsig-${id}`;
+        this.XmlSignature.Id = `xmldsig-${xmlId}`;
         const dataObject = new DataObject();
         dataObject.QualifyingProperties.Target = `#${this.XmlSignature.Id}`;
-        dataObject.QualifyingProperties.SignedProperties.Id = `xades-${this.XmlSignature.Id}`;
+        dataObject.QualifyingProperties.SignedProperties.Id = `SignedPropertiesId`;
         this.properties = dataObject.QualifyingProperties;
         this.XmlSignature.ObjectList.Add(dataObject);
     }
@@ -2127,6 +2128,7 @@ class SignedXml extends XmlDSigJs.SignedXml {
             const signingAlg = XmlCore.assign({}, algorithm, key.algorithm);
             const xadesRefHash = signingAlg.hash;
             const xadesRef = new XmlDSigJs.Reference();
+            xadesRef.Id = `xmldsig-${xmlId}-ref2`;
             xadesRef.Type = XADES_REFERENCE_TYPE;
             xadesRef.Uri = `#${this.Properties.SignedProperties.Id}`;
             xadesRef.DigestMethod.Algorithm = XmlDSigJs.CryptoConfig.GetHashAlgorithm(xadesRefHash).namespaceURI;
@@ -2322,3 +2324,4 @@ exports.Convert = XmlCore.Convert;
 exports.Application = XmlDSigJs.Application;
 exports.xml = xml;
 exports.SignedXml = SignedXml;
+exports.xmlId = `xmldsig-${xmlId}`;
